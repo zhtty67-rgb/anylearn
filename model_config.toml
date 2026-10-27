@@ -1,0 +1,31 @@
+# AnyLearn 模型网关配置（沿用公考系统三档策略）
+# base_url / api_key 优先取环境变量 AI_BASE_URL / AI_API_KEY，此处可按策略覆盖。
+# 未配置任何真实端点时自动回落 mock 离线演示。
+
+[policies.FAST]                # 答前提示等轻任务
+provider = "openai_compatible"
+model = "deepseek-flash"
+temperature = 0.1
+max_tokens = 512
+timeout_seconds = 20.0
+
+[policies.BALANCED]            # 讲解 / 问答主力
+provider = "openai_compatible"
+model = "deepseek-flash"
+temperature = 0.2
+max_tokens = 3584
+timeout_seconds = 60.0
+
+[policies.STRONG]              # 生成 / 评分等重任务
+provider = "openai_compatible"
+model = "deepseek-v4-pro"
+temperature = 0.2
+max_tokens = 2048
+timeout_seconds = 60.0
+
+[task_policy_map]
+tutor_hint = "FAST"
+tutor_explanation = "BALANCED"
+chat = "BALANCED"
+grading = "BALANCED"
+question_generation = "STRONG"

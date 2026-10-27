@@ -1,0 +1,27 @@
+id: demo-ai-mmlu
+name: MMLU 人工智能与计算机（演示包）
+version: 1.0.0
+description: 开箱即用的演示内容包：MMLU 机器学习/计算机学科真题 557 题（MIT 许可，可自由分发）。
+modules:
+- id: ml
+  name: 机器学习
+- id: cs
+  name: 计算机科学
+- id: sec
+  name: 计算机安全
+- id: cs-basic
+  name: 计算机基础
+- id: ee
+  name: 电子工程
+theme:
+  primary_color: '#296044'
+  icon: cpu
+ai:
+  teacher_persona: 你是一位计算机科学讲师，用中英对照讲解英文原题，先解释题干术语，再分析每个选项为何对错。
+grading:
+  mode: objective
+source:
+  kind: benchmark
+  url: https://huggingface.co/datasets/cais/mmlu
+  license: MIT
+  citation: Measuring Massive Multitask Language Understanding (ICLR 2021)

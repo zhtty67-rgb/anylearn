@@ -1,0 +1,6 @@
+// 每行一题（JSON）。type: single_choice | cloze | self_rate | short_answer
+// single_choice: answer 为选项字母；cloze/short_answer: answer 为文本，可用 | 分隔多个可接受答案
+// nodes 数组把题目绑到知识树节点 code（与 knowledge_tree.json 对应）；difficulty 1-5
+{"id": "demo-q1", "module": "module-a", "type": "single_choice", "stem": "示例单选题：1+1=?", "options": ["1", "2", "3", "4"], "answer": "B", "explanation": "基础加法。", "difficulty": 1, "estimated_seconds": 20, "tags": ["示例"], "nodes": ["module-a-chapter-1-point-1"]}
+{"id": "demo-q2", "module": "module-a", "type": "cloze", "stem": "示例填空：地球自转一周约 ___ 小时", "answer": "24", "explanation": "地球自转周期约23小时56分，日常取24小时。", "difficulty": 1, "estimated_seconds": 30, "tags": ["示例"], "nodes": ["module-a-chapter-1-point-1"]}
+{"id": "demo-q3", "module": "module-b", "type": "self_rate", "stem": "示例自评卡：复述本模块的核心概念。", "answer": "good", "explanation": "自评卡：看完题目回忆后，按 again/hard/good/easy 自评。", "difficulty": 2, "estimated_seconds": 45, "tags": ["示例"], "nodes": ["module-b-chapter-1-point-1"]}

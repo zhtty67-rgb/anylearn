@@ -1,0 +1,47 @@
+# 运行与本地数据
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# 数据库（启动时自动创建/迁移）
+data/*.db
+data/*.db-wal
+data/*.db-shm
+
+# 本地原始资料缓存与构建中间产物（含第三方版权数据，不入库）
+.cache/
+*.parquet
+
+# 发布打包产物
+release/
+
+# 日志与临时文件
+*.log
+server.log
+tmp_*
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+
+# 个人环境配置（模板见 model_config.toml）
+.env
+model_config.local.toml
+
+# ---- 内容包：仅保留可自由分发的 ----
+# 英语词义分类词库派生题目：原词库有版权登记（黔作登字-2022-A-00398574）
+# 且声明「不得商用」，需自行构建，不随仓库分发。
+content-packs/english-vocab/
+# 个人 Anki 收藏导入的内容包（个人数据）
+content-packs/my-anki/
+# 非本仓库产出的第三方内容包草案
+content-packs/ai-learning-framework/
+# 含人工智能训练师题库（来源声明禁止商用），需自行构建
+content-packs/ai-foundations/

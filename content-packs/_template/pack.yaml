@@ -1,0 +1,32 @@
+# 内容包清单 —— 复制本目录为 content-packs/<你的包id>/ 并填入你的内容
+# 放入 content-packs/ 后启动应用即自动安装（或 POST /api/packs/install）
+id: my-learning-pack          # 必填：小写字母/数字/中文/-/_，同目录名
+name: 我的学习包              # 必填：显示名
+version: 1.0.0                # 语义化版本；升级版本号后重装会更新内容
+description: 一句话描述这个学习包教什么。
+
+# 模块：学习包的顶层分区（对应"言语/判断/数量"这类概念）
+# id 规则同 pack id；一级知识树节点必须挂在某个模块上
+modules:
+  - id: module-a
+    name: 模块甲
+  - id: module-b
+    name: 模块乙
+
+# 主题（可选）：不填则沿用框架默认的公考墨绿 #296044
+theme:
+  primary_color: "#296044"
+  icon: "sparkles"
+
+# AI 教师人设（可选）：教师模式提示词将采用此persona
+ai:
+  teacher_persona: 你是一位耐心细致的学科教师，先给结论再给依据，善于举例。
+
+# 判分策略（可选）：objective（客观题自动判分）
+grading:
+  mode: objective
+
+# 资料来源（可选，仅记录）
+source:
+  kind: manual
+  url: https://example.com

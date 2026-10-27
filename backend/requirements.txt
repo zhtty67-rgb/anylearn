@@ -1,0 +1,7 @@
+fastapi
+fsrs==6.3.2
+uvicorn
+pydantic
+httpx
+PyYAML
+pytest

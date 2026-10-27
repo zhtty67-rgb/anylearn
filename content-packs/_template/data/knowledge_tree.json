@@ -1,0 +1,44 @@
+[
+  {
+    "code": "module-a",
+    "name": "模块甲",
+    "module_id": "module-a",
+    "description": "模块甲的说明",
+    "children": [
+      {
+        "code": "module-a-chapter-1",
+        "name": "第一章",
+        "description": "",
+        "children": [
+          {
+            "code": "module-a-chapter-1-point-1",
+            "name": "考点一",
+            "description": "考点的简要说明（展示在知识树）",
+            "question_ids": ["demo-q1", "demo-q2"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "module-b",
+    "name": "模块乙",
+    "module_id": "module-b",
+    "description": "",
+    "children": [
+      {
+        "code": "module-b-chapter-1",
+        "name": "第一章",
+        "description": "",
+        "children": [
+          {
+            "code": "module-b-chapter-1-point-1",
+            "name": "考点一",
+            "description": "",
+            "question_ids": ["demo-q3"]
+          }
+        ]
+      }
+    ]
+  }
+]
