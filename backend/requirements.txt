@@ -5,3 +5,6 @@ pydantic
 httpx
 PyYAML
 pytest
+# 构建脚本用（scripts/build_demo_pack_mmlu.py 读取 MMLU parquet）
+pandas
+pyarrow

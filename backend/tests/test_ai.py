@@ -68,3 +68,22 @@ def test_gateway_schema_validation():
     gw = ModelGateway(config=cfg, custom_provider=FakeProvider())
     result = asyncio.run(gw.generate('chat', [Message(role='user', content='hi')], schema=Reply))
     assert result.data.summary == 'ok'   # 自动剥离 ```json 围栏并校验
+
+
+def test_gateway_degrades_to_mock_when_provider_unavailable():
+    """端点不可达/密钥失效时降级到 mock，学习流程不中断。"""
+    from app.ai.schemas import ProviderUnavailableError
+
+    class BrokenProvider:
+        async def generate(self, messages, config, json_mode=False):
+            raise ProviderUnavailableError('401 invalid api key')
+
+    cfg = GatewayConfig(
+        policies={'BALANCED': ModelPolicyConfig(provider='broken', model='x')},
+        task_policy_map={'chat': 'BALANCED'},
+    )
+    gw = ModelGateway(config=cfg, custom_provider=BrokenProvider())
+    result = asyncio.run(gw.generate('chat', [Message(role='user', content='你好')]))
+    assert result.provider_name == 'mock'
+    assert result.model_name == 'mock-degraded'
+    assert result.data  # 仍有可用回复

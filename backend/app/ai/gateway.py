@@ -4,6 +4,7 @@
 视觉与回退分支，保持骨架最小。
 """
 import json
+import logging
 from typing import Type, TypeVar
 
 from pydantic import BaseModel
@@ -14,9 +15,11 @@ from .providers.mock import MockModelProvider
 from .providers.openai_compatible import OpenAICompatibleProvider
 from .schemas import (
     GatewayConfig, GenerationResult, Message, ModelPolicy,
-    PolicyNotConfiguredError, SchemaValidationError, TaskType, TruncatedGenerationError,
+    PolicyNotConfiguredError, ProviderUnavailableError, SchemaValidationError,
+    TaskType, TruncatedGenerationError,
 )
 
+logger = logging.getLogger(__name__)
 T = TypeVar('T', bound=BaseModel)
 
 
@@ -57,24 +60,40 @@ class ModelGateway:
             raw_text, usage = await provider.generate(
                 processed, policy_cfg.model_copy(update={'max_tokens': budget}),
                 json_mode=schema is not None)
+        except ProviderUnavailableError as exc:
+            # 端点不可达或密钥失效时降级到离线 mock，保证学习流程不中断，
+            # 同时把真实原因带回给调用方（degraded 标记）。
+            logger.warning('模型不可用，降级到 mock：%s', exc)
+            mock = self._providers['mock']
+            raw_text, usage = await mock.generate(
+                processed, policy_cfg.model_copy(update={'provider': 'mock', 'model': 'mock-degraded'}),
+                json_mode=False)
+            return GenerationResult(
+                data=self._validate(raw_text, schema), raw_text=raw_text,
+                policy_used=policy, model_name='mock-degraded', provider_name='mock',
+                tokens_used=usage)
 
-        parsed = raw_text
-        if schema is not None:
-            cleaned = raw_text.strip()
-            if cleaned.startswith('```'):
-                lines = cleaned.split('\n')
-                if lines[0].startswith('```'):
-                    lines = lines[1:]
-                if lines and lines[-1].strip() == '```':
-                    lines = lines[:-1]
-                cleaned = '\n'.join(lines).strip()
-            try:
-                parsed = schema.model_validate_json(cleaned)
-            except Exception as exc:
-                raise SchemaValidationError(f'{schema.__name__} 校验失败: {exc}\nRaw: {raw_text}') from exc
         return GenerationResult(
-            data=parsed, raw_text=raw_text, policy_used=policy,
-            model_name=policy_cfg.model, provider_name=policy_cfg.provider, tokens_used=usage)
+            data=self._validate(raw_text, schema), raw_text=raw_text,
+            policy_used=policy, model_name=policy_cfg.model,
+            provider_name=policy_cfg.provider, tokens_used=usage)
+
+    @staticmethod
+    def _validate(raw_text: str, schema):
+        if schema is None:
+            return raw_text
+        cleaned = raw_text.strip()
+        if cleaned.startswith('```'):
+            lines = cleaned.split('\n')
+            if lines[0].startswith('```'):
+                lines = lines[1:]
+            if lines and lines[-1].strip() == '```':
+                lines = lines[:-1]
+            cleaned = '\n'.join(lines).strip()
+        try:
+            return schema.model_validate_json(cleaned)
+        except Exception as exc:
+            raise SchemaValidationError(f'{schema.__name__} 校验失败: {exc}\nRaw: {raw_text}') from exc
 
 
 _default_gateway: ModelGateway | None = None
