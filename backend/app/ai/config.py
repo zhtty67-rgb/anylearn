@@ -25,6 +25,9 @@ DEFAULT_TASK_MAP: dict[str, ModelPolicy] = {
     'chat': 'BALANCED',
     'grading': 'BALANCED',
     'question_generation': 'STRONG',
+    # 评审会直接决定学习者等级，用最强档
+    'feynman_review': 'STRONG',
+    'socratic_probe': 'BALANCED',
 }
 
 

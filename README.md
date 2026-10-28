@@ -71,7 +71,7 @@ anylearn/
 │   │   │   └── jsonl_import.py  #   任意 JSONL 题库
 │   │   ├── routers/api.py       # 全部 REST 路由
 │   │   └── static/              # 前端 SPA（零构建，纯 HTML/JS/CSS）
-│   └── tests/                   # 36 个 pytest（协议/引擎/导入/API 全链路）
+│   └── tests/                   # 79 个 pytest（协议/引擎/导入/API/教学/项目 全链路）
 ├── content-packs/               # ★ 内容包目录（放进来即自动安装）
 │   ├── _template/               # 协议模板 + 3 道示例题，开箱即用
 │   └── demo-ai-mmlu/            # MMLU 演示题库 557 题（MIT，可自由分发）
@@ -92,7 +92,6 @@ anylearn/
 > `data/anylearn.db` 不入库：首次启动自动创建并迁移。
 
 ## 内容包协议（注入即变系统）
-
 一个内容包 = 一个目录，详见 [`docs/content-pack-spec.md`](docs/content-pack-spec.md)：
 
 ```
@@ -136,7 +135,28 @@ attempts / FSRS 卡片 / 掌握度历史不受破坏（作答是不可变事实�
 - 人设来自内容包 `ai.teacher_persona`，学科上下文自动注入
 - 三种模式：`hint`（答前提示，系统级禁止泄露答案）、`explain`（答后讲解）、`chat`（自由追问）
 - 模型配置：`model_config.toml`（三档策略）+ 环境变量 `AI_BASE_URL` / `AI_API_KEY`；
-  未配置时自动回落离线 mock，全流程可用不依赖外部服务
+  未配置或端点失效时自动回落离线 mock（结果标记 `mock-degraded`），学习流程不中断
+
+## 教学过程与项目验收
+
+题库之上还有两层，回答「该学什么、卡在哪、凭什么说你会了」：
+
+**Lesson 层（迁移 `003`）** — 课程 course → 单元 unit → 步骤 step → 概念 concept。
+步骤走「诊断 → 苏格拉底追问 → 讲解 → 费曼讲解 → 动手 → 独立验收」，
+概念之间记录先修关系用于卡点定位。
+
+**Project 层（迁移 `004`）** — 项目 project → 门禁 → 里程碑 → 交付物。
+交付物按规则自动验收（文件存在性、命令退出码、数据校验、解释评审），
+通过后才会把证据写回概念等级。
+
+核心规则：
+
+> **能力等级只能由证据推导，模型不能直接给分。**
+> 纯做题最高到 L4；**L5 必须由项目验收兑现**。
+> 辅助完成（`assisted`）会记账但不计入独立验收证据。
+
+细节见 [`docs/learning-framework.md`](docs/learning-framework.md) 与
+[`docs/project-layer.md`](docs/project-layer.md)。
 
 ## 界面
 
@@ -161,6 +181,17 @@ GET  /api/review/due?pack_id=          FSRS 到期卡片
 GET  /api/packs/{id}/tree              知识树+掌握度
 GET  /api/packs/{id}/overview          学习概览
 POST /api/ai/teacher                   AI 教师 {mode: hint|explain|chat}
+
+# 教学过程（lesson 层）
+GET  /api/packs/{id}/courses           课程列表
+GET  /api/courses/{id}/next            下一个该学的单元
+GET  /api/units/{id}                   单元状态与步骤进度
+GET  /api/concepts/{id}/diagnose       卡点诊断（含先修缺口）
+
+# 项目验收（project 层）
+GET  /api/packs/{id}/projects          项目列表
+GET  /api/projects/{id}                项目状态与里程碑
+POST /api/deliverables/{id}/submit     提交交付物（自动验收）
 ```
 
 ## 测试与验证
@@ -195,3 +226,20 @@ python scripts\package_release.py --no-zip   # 只出目录
 | 提示不泄答案 | 引导复盘红线 | hint 模式系统提示词强制 |
 
 刻意**未搬**的：申论批改全家桶、模块→名师硬编码映射、题库导入修复管线——这些是公考领域内容，不属于纯框架。
+
+## 生态署名
+
+本项目遵循 **灵枢（Lingshu）** 生态：
+
+- **灵枢生态** — 「灵 × 脑 × 身」AI 生命载体聚合仓 · https://github.com/FuRongJun-1999/lingshu
+- **dsh-memory（脑）** — 白箱认知图引擎 · https://github.com/FuRongJun-1999/dsh-memory
+- **DeepSeek-Harness（DSH）** — 插件宿主框架 · https://github.com/deepseek-ai/deepseek-harness
+
+承袭的核心约定：作答是不可变事实源、能力等级只由证据推导、教学复盘不污染统计、
+提示不泄答案。完整署名与内容声明见 [`ECOSYSTEM.md`](ECOSYSTEM.md)。
+
+## 许可
+
+框架代码 [MIT](LICENSE)。随仓库的演示题库为 MMLU（MIT）。
+其他第三方资料的授权见 [`docs/data-sources.md`](docs/data-sources.md)，
+其中明确标注了「不得商用」类限制——请勿将受限内容包用于商业用途或再分发。

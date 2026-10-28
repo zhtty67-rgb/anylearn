@@ -309,6 +309,15 @@ def get_unit(unit_id: str, request: Request):
                 continue
             if b['blocked']:
                 blockers.append(b)
+        # 概念名与角色一并返回，前端不必再查一次
+        meta = {r['concept_id']: dict(r) for r in db.execute(
+            '''SELECT uc.concept_id, c.name, uc.role, uc.target_level
+               FROM unit_concepts uc JOIN concepts c ON c.id=uc.concept_id
+               WHERE uc.unit_id=?''', (unit_id,))}
+        for c in status['concepts']:
+            m = meta.get(c['concept_id']) or {}
+            c['name'] = m.get('name') or c['concept_id'].split(':')[-1]
+            c['role'] = m.get('role')
     return {'unit': status, 'steps': steps, 'blockers': blockers}
 
 
@@ -464,6 +473,97 @@ def review_submission(body: ReviewBody, request: Request):
             raise HTTPException(404, str(exc))
         except ValueError as exc:
             raise HTTPException(400, str(exc))
+
+
+class AIReviewBody(BaseModel):
+    submission_id: int
+    force: bool = Field(default=False, description='即使已评审过也重新评审')
+
+
+@router.post('/submissions/ai-review')
+async def ai_review_submission(body: AIReviewBody, request: Request):
+    """AI 教师按 rubric 评审解释类交付物。
+
+    模型不可用或判断不明时**保持 pending**，绝不代学习者决定过不过。
+    """
+    from ..ai import reviewer as ai_reviewer
+    with get_db(request) as db:
+        sub = db.execute('SELECT * FROM deliverable_submissions WHERE id=?',
+                         (body.submission_id,)).fetchone()
+        if sub is None:
+            raise HTTPException(404, f'提交不存在: {body.submission_id}')
+        if sub['verdict'] != 'pending' and not body.force:
+            raise HTTPException(400, f'该提交当前状态为 {sub["verdict"]}，非 pending')
+        checks = json.loads(sub['checks_json'] or '[]')
+        pending_check = next((c for c in checks if c.get('needs_review')), None)
+        if pending_check is None:
+            raise HTTPException(400, '该提交没有需要评审的项')
+        rubric = pending_check.get('rubric') or []
+        payload = json.loads(sub['payload_json'] or '{}')
+        text = str(payload.get('explain') or payload.get('text') or '').strip()
+        row = db.execute(
+            '''SELECT c.name, c.summary, p.title AS project_title FROM project_concepts pc
+               JOIN concepts c ON c.id=pc.concept_id
+               JOIN projects p ON p.id=pc.project_id
+               WHERE pc.project_id=? LIMIT 1''', (sub['project_id'],)).fetchone()
+        concept_name = row['name'] if row else '（未知概念）'
+        concept_summary = row['summary'] if row else ''
+        project_title = row['project_title'] if row else ''
+
+    review = await ai_reviewer.review_explain(
+        concept_name=concept_name, concept_summary=concept_summary,
+        rubric=rubric, text=text)
+    with get_db(request) as db:
+        applied = ai_reviewer.apply_review(db, body.submission_id, review)
+    return {'project': project_title, 'review': review, 'applied': applied}
+
+
+class ProbeBody(BaseModel):
+    concept_id: str
+    utterance: str = ''
+    history: list[dict] | None = None
+
+
+@router.post('/tutor/socratic')
+async def socratic(body: ProbeBody, request: Request):
+    """苏格拉底追问：只提问，不给答案，也不含任何等级判定。"""
+    from ..ai import tutor
+    with get_db(request) as db:
+        try:
+            concept, misconceptions = tutor.concept_context(db, body.concept_id)
+        except KeyError as exc:
+            raise HTTPException(404, str(exc))
+    return await tutor.socratic_probe(concept=concept, misconceptions=misconceptions,
+                                      utterance=body.utterance, history=body.history)
+
+
+class FeynmanBody(BaseModel):
+    concept_id: str
+    explanation: str
+    rubric: list[str] | None = None
+
+
+@router.post('/tutor/feynman-review')
+async def feynman(body: FeynmanBody, request: Request):
+    """费曼讲解评审：返回哪几条没讲清；不给等级、不给分数。"""
+    from ..ai import tutor
+    with get_db(request) as db:
+        try:
+            concept, _ = tutor.concept_context(db, body.concept_id)
+        except KeyError as exc:
+            raise HTTPException(404, str(exc))
+        step = db.execute(
+            "SELECT config_json FROM unit_steps WHERE concept_id=? AND kind='feynman' LIMIT 1",
+            (body.concept_id,)).fetchone()
+        stored = json.loads(step['config_json'] or '{}').get('rubric') if step else None
+    rubric = body.rubric or stored or [
+        '能说清这个概念解决什么问题',
+        '举了一个具体例子',
+        '说清了这个方法的局限',
+        '没有堆砌未解释的术语',
+    ]
+    return await tutor.feynman_review(concept=concept, rubric=rubric,
+                                      explanation=body.explanation)
 
 
 # ---------- 开源社区资料导入 ----------

@@ -1,0 +1,128 @@
+/* 学习框架 + 项目层样式。命名前缀 al-（anylearn learn），避免与既有类冲突。 */
+
+/* ---------- 通用 ---------- */
+.al-level { display: inline-block; padding: 1px 7px; border-radius: 999px; font-size: 12px;
+  font-weight: 600; background: #eef1ef; color: #4a5a52; }
+.al-lv-0 { background: #eef0ef; color: #7a8580; }
+.al-lv-1 { background: #e6f0ea; color: #2f6b4b; }
+.al-lv-2 { background: #dcece2; color: #296044; }
+.al-lv-3 { background: #cfe4d7; color: #21503a; }
+.al-lv-4 { background: #d9e9f5; color: #245b7a; }
+.al-lv-5 { background: #e8e2f6; color: #4b3a80; }
+
+.al-flag { font-size: 12px; padding: 1px 8px; border-radius: 999px; white-space: nowrap; }
+.al-flag.done, .al-flag.passed, .al-flag.completed { background: #dcece2; color: #21503a; }
+.al-flag.ready, .al-flag.available { background: #eef1ef; color: #56655d; }
+.al-flag.locked { background: #f4eeee; color: #8a5a5a; }
+.al-flag.in_progress { background: #e9effa; color: #2f4f80; }
+.al-flag.in_review { background: #fdf1dc; color: #7a5a1c; }
+
+.al-bar { height: 6px; background: #e9ece9; border-radius: 999px; overflow: hidden; flex: 1; }
+.al-bar > i { display: block; height: 100%; background: var(--accent, #296044); border-radius: 999px; }
+.al-link { color: var(--accent, #296044); text-decoration: none; font-size: 13px; }
+.al-link:hover { text-decoration: underline; }
+.al-verdict { font-size: 12px; padding: 1px 8px; border-radius: 999px; }
+.al-verdict.v-pass { background: #dcece2; color: #21503a; }
+.al-verdict.v-fail { background: #f6e3e3; color: #8a3a3a; }
+.al-verdict.v-pending { background: #fdf1dc; color: #7a5a1c; }
+
+/* ---------- 课程/单元列表 ---------- */
+.al-course-head { margin: 26px 0 10px; font-weight: 700; font-size: 16px; }
+.al-units { display: grid; gap: 12px; }
+.al-unit { display: block; padding: 14px 16px; border: 1px solid var(--line, #e3e7e3);
+  border-radius: var(--radius-md, 12px); background: #fff; text-decoration: none; color: inherit;
+  transition: box-shadow .15s ease, transform .15s ease; }
+.al-unit:hover { box-shadow: var(--shadow-md, 0 4px 14px rgba(0,0,0,.08)); transform: translateY(-1px); }
+.al-unit.done { border-color: #cfe4d7; }
+.al-unit-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.al-unit-title { font-weight: 600; }
+.al-unit-obj { margin: 6px 0 10px; color: var(--muted, #6b7671); font-size: 13px; line-height: 1.6; }
+.al-unit-meta { display: flex; align-items: center; gap: 10px; }
+
+/* ---------- 单元详情 ---------- */
+.al-panel { margin: 18px 0; padding: 16px 18px; border: 1px solid var(--line, #e3e7e3);
+  border-radius: var(--radius-md, 12px); background: #fff; }
+.al-panel.warn { border-color: #f0dcc0; background: #fffaf2; }
+.al-panel.ok { border-color: #cfe4d7; background: #f6fbf8; }
+.al-panel-head { font-weight: 700; margin-bottom: 12px; }
+.al-concepts { display: grid; gap: 10px; }
+.al-concept { padding-bottom: 10px; border-bottom: 1px dashed #eceeec; }
+.al-concept:last-child { border-bottom: 0; padding-bottom: 0; }
+.al-concept-name { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.al-concept-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+
+.al-blocker { margin-bottom: 12px; }
+.al-blocker ul, .al-reasons ul { margin: 4px 0 6px; padding-left: 18px; color: var(--muted, #6b7671); font-size: 13px; }
+.al-reasons { padding-left: 18px; }
+.al-reasons li { margin-bottom: 8px; font-size: 14px; }
+.al-next { margin: 6px 0 0; font-weight: 600; color: #21503a; }
+
+.al-steps { list-style: none; margin: 0; padding: 0; }
+.al-step { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px dashed #eceeec; }
+.al-step:last-child { border-bottom: 0; }
+.al-step.done { opacity: .72; }
+.al-step-ord { width: 26px; height: 26px; flex: none; border-radius: 50%; background: #eef1ef;
+  color: #4a5a52; display: grid; place-items: center; font-size: 13px; font-weight: 700; }
+.al-step.done .al-step-ord { background: #cfe4d7; color: #21503a; }
+.al-step-body { flex: 1; min-width: 0; }
+.al-step-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.al-step-kind { font-size: 12px; padding: 1px 8px; border-radius: 999px; background: #eef1ef; color: #4a5a52; }
+.al-step-kind.k-diagnose { background: #e9effa; color: #2f4f80; }
+.al-step-kind.k-socratic { background: #f0ecfa; color: #4b3a80; }
+.al-step-kind.k-feynman { background: #fdeef4; color: #7a2f52; }
+.al-step-kind.k-verify { background: #fdf1dc; color: #7a5a1c; }
+.al-step-title { font-weight: 600; }
+.al-ref { margin-top: 4px; font-size: 12px; color: var(--muted, #6b7671); }
+.al-step-actions { margin-top: 8px; }
+.al-task, .al-rubric { margin-top: 6px; font-size: 13px; color: var(--muted, #6b7671); }
+
+.al-tool { margin-top: 10px; }
+.al-input { width: 100%; box-sizing: border-box; padding: 9px 11px; border: 1px solid var(--line, #e3e7e3);
+  border-radius: 8px; font: inherit; font-size: 14px; resize: vertical; background: #fcfdfc; }
+.al-input:focus { outline: 2px solid var(--accent-soft, #cfe4d7); outline-offset: 1px; }
+.al-mini { margin-top: 8px; padding: 6px 14px; border: 1px solid var(--accent, #296044);
+  background: #fff; color: var(--accent, #296044); border-radius: 8px; font: inherit; font-size: 13px;
+  cursor: pointer; }
+.al-mini:hover { background: var(--accent-soft, #e6f0ea); }
+.al-mini:disabled { opacity: .5; cursor: default; }
+
+.al-qa { margin-top: 10px; padding: 10px 12px; background: #f6f8f7; border-radius: 8px; font-size: 14px; line-height: 1.7; }
+.al-review { margin-top: 10px; padding: 12px; background: #f8faf9; border-radius: 8px; font-size: 14px; }
+.al-review-head { font-weight: 700; margin-bottom: 8px; }
+.al-rubric-list { list-style: none; margin: 0; padding: 0; }
+.al-rubric-list li { padding: 5px 0; border-bottom: 1px dashed #e8ece9; line-height: 1.6; }
+.al-rubric-list li.ok { color: #21503a; }
+.al-rubric-list li.gap { color: #8a3a3a; }
+.al-gaps { margin-top: 10px; }
+.al-gaps ul { margin: 4px 0 0; padding-left: 18px; }
+
+/* ---------- 项目 ---------- */
+.al-projects { display: grid; gap: 14px; }
+.al-proj { display: block; padding: 16px 18px; border: 1px solid var(--line, #e3e7e3);
+  border-radius: var(--radius-md, 12px); background: #fff; text-decoration: none; color: inherit; }
+.al-proj:hover { box-shadow: var(--shadow-md, 0 4px 14px rgba(0,0,0,.08)); }
+.al-proj.locked { opacity: .8; }
+.al-proj-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.al-proj-title { font-weight: 700; font-size: 16px; }
+.al-proj-brief { margin: 6px 0 10px; color: var(--muted, #6b7671); font-size: 13px; line-height: 1.6; }
+.al-gate { margin-top: 10px; padding: 8px 10px; background: #fff7ec; border-radius: 8px;
+  font-size: 13px; color: #7a5a1c; }
+.al-goal { margin: -6px 0 14px; padding: 10px 12px; background: #f6f8f7; border-radius: 8px;
+  font-size: 13px; color: var(--muted, #6b7671); }
+
+.al-ms { padding: 14px 0; border-bottom: 1px dashed #eceeec; }
+.al-ms:last-child { border-bottom: 0; }
+.al-ms-head { display: flex; justify-content: space-between; align-items: center; font-weight: 600; }
+.al-ms-obj { margin: 4px 0 10px; font-size: 13px; color: var(--muted, #6b7671); }
+.al-deliverables { display: grid; gap: 10px; }
+.al-del { padding: 10px 12px; background: #fbfcfb; border: 1px solid #eef1ef; border-radius: 8px; }
+.al-del-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.al-del-title { font-weight: 600; font-size: 14px; }
+.al-kind { font-size: 11px; padding: 1px 7px; border-radius: 999px; background: #eef1ef; color: #4a5a52; }
+.al-pending { padding: 8px 0; border-bottom: 1px dashed #eceeec; }
+.al-pending:last-child { border-bottom: 0; }
+
+@media (max-width: 640px) {
+  .al-unit-meta, .al-concept-meta { flex-wrap: wrap; }
+  .al-step { gap: 8px; }
+}

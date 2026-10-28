@@ -8,8 +8,10 @@ TaskType = Literal[
     'tutor_hint',       # 答前提示（不泄露答案）
     'tutor_explanation',  # 答后完整讲解
     'chat',             # 自由问答
-    'grading',          # 主观题AI判分（预留）
+    'grading',          # 主观题AI判分
     'question_generation',  # 变式题生成（预留）
+    'socratic_probe',   # 苏格拉底追问（不直接给答案）
+    'feynman_review',   # 费曼式讲解评审
 ]
 
 
