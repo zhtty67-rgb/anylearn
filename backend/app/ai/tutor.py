@@ -70,10 +70,16 @@ async def socratic_probe(*, concept, misconceptions: list[str], utterance: str,
             f'本轮学习者的话：{utterance or "（还没有说话）"}\n'
             f'此前对话：\n{convo or "（无）"}\n\n'
             f'请给出一个最关键的追问。')
-    result = await gw.generate('socratic_probe',
-                               [Message(role='system', content=SOCRATIC_SYSTEM),
-                                Message(role='user', content=user)],
-                               schema=Probe)
+    try:
+        result = await gw.generate('socratic_probe',
+                                   [Message(role='system', content=SOCRATIC_SYSTEM),
+                                    Message(role='user', content=user)],
+                                   schema=Probe)
+    except Exception as exc:  # 模型输出不合结构时不能把整个学习流程打断
+        return {'question': '你能举一个具体例子说明这一点吗？',
+                'targets': '', 'why': '模型输出不符合约定结构，已降级为通用追问',
+                'model': None, 'provider': None, 'degraded': True,
+                'error': str(exc)[:300]}
     probe: Probe = result.data
     degraded = result.provider_name == 'mock'
     return {'question': probe.question, 'targets': probe.targets, 'why': probe.why,

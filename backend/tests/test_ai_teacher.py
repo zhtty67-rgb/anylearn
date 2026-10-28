@@ -116,6 +116,41 @@ def test_feynman_review_reports_gaps_not_grades():
 
 
 # ---------------------------------------------------------------- 落库联动
+# ---------------------------------------------------------------- mock 契约
+def test_mock_provider_matches_each_schema():
+    """mock 必须按请求的 schema 返回结构，否则会把学习流程打挂（踩过的坑）。"""
+    from app.ai.providers.mock import MockModelProvider
+    from app.ai.schemas import Message
+    from app.ai.tutor import FeynmanReview, Probe
+    from app.ai.reviewer import ExplainReview
+
+    provider = MockModelProvider()
+    cfg = ModelPolicyConfig(provider='mock', model='mock-m')
+    for schema in (Probe, ExplainReview, FeynmanReview):
+        schema_text = json.dumps(schema.model_json_schema(), ensure_ascii=False)
+        msgs = [Message(role='system',
+                        content='教学模式\n\nYou MUST reply with valid JSON conforming to this schema:\n'
+                                + schema_text),
+                Message(role='user', content='- 条目一\n- 条目二')]
+        raw, _ = asyncio.run(provider.generate(msgs, cfg, json_mode=True))
+        schema.model_validate_json(raw)  # 不抛异常即结构正确
+
+
+def test_mock_never_says_pass():
+    """mock 的评审结论必须是 unclear，永远不能替学习者决定过没过。"""
+    from app.ai.providers.mock import MockModelProvider
+    from app.ai.reviewer import ExplainReview
+    from app.ai.schemas import Message
+
+    schema_text = json.dumps(ExplainReview.model_json_schema(), ensure_ascii=False)
+    msgs = [Message(role='system',
+                    content='You MUST reply with valid JSON conforming to this schema:\n' + schema_text),
+            Message(role='user', content='- 标准一')]
+    raw, _ = asyncio.run(MockModelProvider().generate(
+        msgs, ModelPolicyConfig(provider='mock', model='m'), json_mode=True))
+    assert json.loads(raw)['verdict'] == 'unclear'
+
+
 @pytest.fixture
 def pdb_like(installed_db, tmp_path):
     from tests.test_project import _seed
